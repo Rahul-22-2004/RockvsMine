@@ -447,17 +447,17 @@ const PredictionChart = ({ history }) => {
                 
                 <motion.div
                   whileHover={{ scale: 1.05, y: -5 }}
-                  className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800 rounded-xl p-4 text-center shadow-md"
+                  className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-xl p-4 text-center shadow-md"
                 >
-                  <p className="text-3xl font-bold text-red-600 dark:text-red-300">{mineCount}</p>
+                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-300">{mineCount}</p>
                   <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 font-medium">💣 Mines</p>
                 </motion.div>
                 
                 <motion.div
                   whileHover={{ scale: 1.05, y: -5 }}
-                  className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 rounded-xl p-4 text-center shadow-md"
+                  className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-xl p-4 text-center shadow-md"
                 >
-                  <p className="text-3xl font-bold text-purple-600 dark:text-purple-300">{history.length}</p>
+                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-300">{history.length}</p>
                   <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 font-medium">📊 Total</p>
                 </motion.div>
               </div>
@@ -466,12 +466,12 @@ const PredictionChart = ({ history }) => {
               {/* Average Confidence */}
               <motion.div
                 whileHover={{ scale: 1.02 }}
-                className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900 dark:to-emerald-900 rounded-xl p-4 border-2 border-green-200 dark:border-green-700"
+                className="bg-gradient-to-r from-blue-50 to-blue-150 dark:from-blue-900 dark:to-blue-800 rounded-xl p-4 border-2 border-blue-200 dark:border-blue-700"
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs text-gray-600 dark:text-gray-300 mb-1 font-medium">Average Confidence</p>
-                    <p className="text-3xl font-bold text-green-600 dark:text-green-300">
+                    <p className="text-3xl font-bold text-blue-600 dark:text-blue-300">
                       {(history.reduce((acc, h) => acc + h.confidence, 0) / history.length).toFixed(1)}%
                     </p>
                   </div>
@@ -512,7 +512,7 @@ const PredictionChart = ({ history }) => {
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-yellow-900 dark:to-orange-900 rounded-xl p-3 border border-yellow-200 dark:border-yellow-700"
+                      className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-800 dark:to-blue-900 rounded-xl p-3 border border-blue-200 dark:border-blue-700"
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-2xl">🎯</span>

@@ -138,7 +138,7 @@ const InputSection = ({ onPredict, loading }) => {
             onClick={loadSampleRock}
             className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg font-medium flex items-center gap-2 transition"
           >
-            <span>🪨</span> Load Rock Sample
+            <span></span> Load Sample 1
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -146,7 +146,7 @@ const InputSection = ({ onPredict, loading }) => {
             onClick={loadSampleMine}
             className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg font-medium flex items-center gap-2 transition"
           >
-            <span>💣</span> Load Mine Sample
+            <span></span> Load Sample 2
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}
