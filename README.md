@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 # 🪨 Rock vs Mine Prediction System
 
@@ -80,18 +80,49 @@ npm install
 npm start
 # → http://localhost:3000
 ```
-🛠️ Deployment
 
-Frontend: Vercel (auto-deploys from GitHub)
-Backend: Render (Python service, free tier with occasional sleep)
-CORS: Configured to allow your Vercel domain
+## 🛠️ Deployment
 
-📌 Future Plans
+### Current Live Deployment
 
-User accounts & persistent history
-Model performance dashboard
-Export predictions (CSV/JSON)
-Docker + multi-container setup
-CI/CD with GitHub Actions
+- **Frontend**: Deployed on **Vercel**  
+  - Automatic GitHub integration  
+  - Instant previews on pull requests  
+  - Custom domain support  
+  - **URL**: [https://rockvs-mine.vercel.app](https://rockvs-mine.vercel.app)
 
-Custom domain
+- **Backend**: Hosted on **Render** (Python service)  
+  - Free tier (sleeps after 15 min inactivity)  
+  - Auto-deploys on git push  
+  - **URL**: [https://rock-vs-mine-backend.onrender.com](https://rock-vs-mine-backend.onrender.com)  
+  - **Swagger docs**: [https://rock-vs-mine-backend.onrender.com/docs](https://rock-vs-mine-backend.onrender.com/docs)
+
+### How to Deploy Yourself
+
+1. **Frontend (Vercel)**  
+   - Connect your GitHub repo to Vercel  
+   - Set **root directory**: `/frontend`  
+   - **Build command**: `npm run build`  
+   - **Output directory**: `build`  
+   - Add environment variable:  
+
+
+2. **Backend (Render)**  
+- Create **New Web Service** → choose Python  
+- Set **root directory**: `/backend`  
+- **Build command**: `pip install -r requirements.txt`  
+- **Start command**:  
+
+- Free tier works great for demo purposes
+
+## 📌 Future Plans
+
+- 🔒 **User authentication** & persistent prediction history
+- 📉 **Model performance dashboard** (accuracy, confusion matrix, calibration plot)
+- 📤 **Export prediction history** (CSV/JSON download)
+- 🐳 **Docker** + multi-container setup with `docker-compose`
+- 🔄 **CI/CD pipeline** using GitHub Actions
+- 🌍 **Custom domain** & full HTTPS enforcement
+- 📱 **Mobile responsiveness** & Progressive Web App (PWA) support
+- 🧪 **A/B testing** for different ML models & hyperparameters
+- 📊 **Advanced visualizations** (feature importance, SHAP explanations)
