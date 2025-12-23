@@ -35,7 +35,8 @@ const App = () => {
   // const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
   // const CONTACT_FORM_ACTION = process.env.REACT_APP_CONTACT_FORM_ACTION || "";
   // -------------------------------------
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/predict";
+  const API_URL =
+    process.env.REACT_APP_API_URL || "http://localhost:8000/predict";
   const CONTACT_FORM_ACTION = process.env.REACT_APP_CONTACT_FORM_ACTION || "";
 
   // -------------------------------------
@@ -112,7 +113,7 @@ const App = () => {
     const loadingToast = toast.loading("🔍 Analyzing sonar data...");
 
     try {
-      const response = await axios.post(`${API_URL}/predict`, {
+      const response = await axios.post(`${API_URL}`, {
         values: features,
       });
 
