@@ -108,10 +108,10 @@ npm start
 
 
 2. **Backend (Render)**  
-- Create **New Web Service** → choose Python  
-- Set **root directory**: `/backend`  
-- **Build command**: `pip install -r requirements.txt`  
-- **Start command**:  
+    - Create **New Web Service** → choose Python  
+    - Set **root directory**: `/backend`  
+    - **Build command**: `pip install -r requirements.txt`  
+    - **Start command**:  
 
 - Free tier works great for demo purposes
 
@@ -126,3 +126,4 @@ npm start
 - 📱 **Mobile responsiveness** & Progressive Web App (PWA) support
 - 🧪 **A/B testing** for different ML models & hyperparameters
 - 📊 **Advanced visualizations** (feature importance, SHAP explanations)
+
