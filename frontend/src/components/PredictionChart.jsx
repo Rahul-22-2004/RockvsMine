@@ -17,6 +17,7 @@ const PredictionChart = ({ history }) => {
   const [rocModelInfo, setRocModelInfo] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';  // Use same env var as in App.jsx
 
   const rockCount = history.filter(h => h.prediction === 'Rock').length;
   const mineCount = history.filter(h => h.prediction === 'Mine').length;
@@ -26,7 +27,7 @@ const PredictionChart = ({ history }) => {
   const fetchROCCurve = useCallback(async () => {
     try {
       setLoadingROC(true);
-      const response = await axios.get('http://localhost:8000/roc-curve');
+      const response = await axios.get(`${API_URL}/roc-curve`);
       setRocImage(response.data.roc_curve_image);
       setRocModelInfo({
         modelName: response.data.model_name,
@@ -39,7 +40,7 @@ const PredictionChart = ({ history }) => {
     } finally {
       setLoadingROC(false);
     }
-  }, []);
+  }, [API_URL]);
 
 
   useEffect(() => {
@@ -253,181 +254,95 @@ const PredictionChart = ({ history }) => {
               </div>
             )}
             {chartType === 'bar' && (
-              <div className="h-full">
-                <Bar data={barData} options={options} />
-              </div>
+              <Bar data={barData} options={options} />
             )}
             {chartType === 'trend' && (
-              <div className="h-full">
-                <Line data={trendData} options={options} />
-              </div>
+              <Line data={trendData} options={options} />
             )}
-            
-            {/* ENHANCED ROC CURVE DISPLAY */}
             {chartType === 'roc' && (
-              <AnimatePresence mode="wait">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="space-y-4"
-                >
-                  {loadingROC ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                      <div className="relative w-20 h-20 mb-6">
-                        <div className="absolute inset-0 border-4 border-purple-200 dark:border-purple-800 rounded-full"></div>
-                        <div className="absolute inset-0 border-4 border-t-purple-500 rounded-full animate-spin"></div>
-                      </div>
-                      <motion.p
-                        animate={{ opacity: [0.5, 1, 0.5] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                        className="text-sm text-gray-600 dark:text-gray-400 font-medium"
+              <AnimatePresence>
+                {loadingROC ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="h-full flex flex-col items-center justify-center text-center"
+                  >
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      className="text-6xl mb-4"
+                    >
+                      🔄
+                    </motion.div>
+                    <p className="text-gray-600 dark:text-gray-400 font-medium">Loading ROC Curve...</p>
+                  </motion.div>
+                ) : rocImage ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="relative h-full flex flex-col items-center justify-center"
+                  >
+                    <div className="relative w-full max-w-md">
+                      <img
+                        src={rocImage}
+                        alt="ROC Curve"
+                        className="w-full h-auto rounded-lg shadow-xl border-2 border-blue-200 dark:border-blue-700"
+                      />
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setIsFullscreen(true)}
+                        className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/90 p-2 rounded-full shadow-md hover:bg-white dark:hover:bg-gray-800 transition"
+                        title="Fullscreen"
                       >
-                        Generating ROC curve...
-                      </motion.p>
+                        <FaExpand className="text-gray-600 dark:text-gray-300" />
+                      </motion.button>
                     </div>
-                  ) : rocImage ? (
-                    <>
-                      {/* ROC Image Container with Hover Effects */}
-                      <div className="relative group">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 rounded-xl opacity-20 group-hover:opacity-40 blur transition duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-xl p-5 shadow-xl">
-                          <img
-                            src={rocImage}
-                            alt="ROC Curve"
-                            className="w-full h-auto rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer"
-                            onClick={() => setIsFullscreen(true)}
-                          />
-                          
-                          {/* Action Buttons Overlay */}
-                          <div className="absolute top-8 right-8 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => setIsFullscreen(true)}
-                              className="bg-white dark:bg-gray-800 p-3 rounded-full shadow-lg hover:shadow-xl transition"
-                              title="Fullscreen"
-                            >
-                              <FaExpand className="text-purple-600 dark:text-purple-400" />
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.1, rotate: 180 }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={fetchROCCurve}
-                              className="bg-white dark:bg-gray-800 p-3 rounded-full shadow-lg hover:shadow-xl transition"
-                              title="Refresh"
-                            >
-                              <FaSyncAlt className="text-purple-600 dark:text-purple-400" />
-                            </motion.button>
-                          </div>
-                        </div>
-                      </div>
 
-                      {/* Model Info Card - Enhanced */}
-                      {rocModelInfo && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1 }}
-                          className="relative overflow-hidden bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 rounded-xl p-[2px]"
-                        >
-                          <div className="bg-white dark:bg-gray-800 rounded-xl p-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div className="flex items-center gap-3">
-                                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-lg shadow-lg">
-                                  <FaChartArea className="text-white text-lg" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Model</p>
-                                  <p className="text-sm font-bold text-purple-700 dark:text-purple-300 font-mono truncate">
-                                    {rocModelInfo.modelName}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-lg shadow-lg">
-                                  <FaInfoCircle className="text-white text-lg" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Curve</p>
-                                  <p className="text-sm font-bold text-pink-700 dark:text-pink-300 truncate">
-                                    {rocModelInfo.timestamp}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-
-                      {/* Info Card - Enhanced */}
+                    {rocModelInfo && (
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-50 dark:from-blue-900/20 dark:via-cyan-900/20 dark:to-blue-900/20 rounded-xl p-4 border-2 border-blue-200 dark:border-blue-800 shadow-lg"
+                        className="mt-4 text-center space-y-1 text-sm"
                       >
-                        <div className="flex items-start gap-3">
-                          <motion.div
-                            animate={{ rotate: [0, 10, 0] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className="text-4xl"
-                          >
-                            📚
-                          </motion.div>
-                          <div className="flex-1">
-                            <h4 className="text-sm font-bold text-blue-800 dark:text-blue-300 mb-3 flex items-center gap-2">
-                              Understanding ROC Curve
-                            </h4>
-                            <div className="space-y-2">
-                              <div className="flex items-start gap-3 bg-white/50 dark:bg-gray-800/50 rounded-lg p-2">
-                                <span className="text-green-500 text-lg font-bold">✓</span>
-                                <p className="text-xs text-blue-700 dark:text-blue-400 flex-1">
-                                  <strong className="text-green-600 dark:text-green-400">AUC closer to 1.0</strong> indicates excellent model performance
-                                </p>
-                              </div>
-                              <div className="flex items-start gap-3 bg-white/50 dark:bg-gray-800/50 rounded-lg p-2">
-                                <span className="text-yellow-500 text-lg font-bold">━</span>
-                                <p className="text-xs text-blue-700 dark:text-blue-400 flex-1">
-                                  <strong className="text-yellow-600 dark:text-yellow-400">Diagonal line</strong> represents random classifier (50% accuracy)
-                                </p>
-                              </div>
-                              <div className="flex items-start gap-3 bg-white/50 dark:bg-gray-800/50 rounded-lg p-2">
-                                <span className="text-purple-500 text-lg font-bold">↗</span>
-                                <p className="text-xs text-blue-700 dark:text-blue-400 flex-1">
-                                  <strong className="text-purple-600 dark:text-purple-400">Curve above diagonal</strong> shows better classification ability
-                                </p>
-                              </div>
-                            </div>
-                          </div>
+                        <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
+                          <FaInfoCircle />
+                          <span>Model: {rocModelInfo.modelName}</span>
                         </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-500">
+                          Generated: {rocModelInfo.timestamp}
+                        </p>
                       </motion.div>
-                    </>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-16">
-                      <motion.div
-                        animate={{ scale: [1, 1.1, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="text-7xl mb-4"
-                      >
-                        📊
-                      </motion.div>
-                      <p className="text-gray-600 dark:text-gray-400 mb-4 font-medium text-center">
-                        ROC curve unavailable<br />
-                        <span className="text-sm text-gray-500">Model may not be trained yet</span>
-                      </p>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={fetchROCCurve}
-                        className="px-6 py-3 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
-                      >
-                        <FaSyncAlt />
-                        Load ROC Curve
-                      </motion.button>
-                    </div>
-                  )}
-                </motion.div>
+                    )}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="h-full flex flex-col items-center justify-center text-center"
+                  >
+                    <motion.div
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="text-7xl mb-4"
+                    >
+                      📊
+                    </motion.div>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4 font-medium text-center">
+                      ROC curve unavailable<br />
+                      <span className="text-sm text-gray-500">Model may not be trained yet</span>
+                    </p>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={fetchROCCurve}
+                      className="px-6 py-3 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                    >
+                      <FaSyncAlt />
+                      Load ROC Curve
+                    </motion.button>
+                  </motion.div>
+                )}
               </AnimatePresence>
             )}
           </motion.div>
@@ -436,7 +351,7 @@ const PredictionChart = ({ history }) => {
           {/* Summary Stats Cards - Only show for non-ROC charts */}
           {chartType !== 'roc' && (
             <>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-3 mb-8">
                 <motion.div
                   whileHover={{ scale: 1.05, y: -5 }}
                   className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-xl p-4 text-center shadow-md"
