@@ -402,3 +402,47 @@ html {
     opacity: 0.85;
   }
 }
+
+.input-premium {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #d1d5db;
+  outline: none;
+}
+.input-premium:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.4);
+}
+
+.icon-left {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.btn-gradient {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(to right, #6366f1, #8b5cf6);
+  transition: transform 0.2s;
+}
+.btn-gradient:hover {
+  transform: scale(1.02);
+}
+.btn-gradient:disabled {
+  opacity: 0.7;
+}
+
+.link {
+  color: #6366f1;
+  font-weight: 600;
+}
+.link:hover {
+  text-decoration: underline;
+}

@@ -28,11 +28,20 @@ import matplotlib
 matplotlib.use('Agg')  
 import matplotlib.pyplot as plt
 
+from auth.auth_utils import decode_token
+from db.mongo import predictions_collection
+from fastapi import Depends, HTTPException
+
+from auth.auth_routes import router as auth_router
+from fastapi.middleware.cors import CORSMiddleware
+
+from datetime import datetime, timezone
+
 warnings.filterwarnings('ignore')
 load_dotenv()
 
 
-DATASET_URL = os.getenv('DATASET_URL', 'https://drive.google.com/file/d/1s_c44vosOb_Xwejx9128_8yL8Wr6-3WV/view?usp=sharing')
+DATASET_URL = os.getenv('DATASET_URL', 'https://rock-vs-mine-dataset-2025.s3.eu-north-1.amazonaws.com/synthetic_sonar_data_1.csv')
 PREDICTION_NOISE = os.getenv('PREDICTION_NOISE', 'false').lower() in ['1', 'true', 'yes']
 TRAINING_NOISE_LEVEL = float(os.getenv('TRAINING_NOISE_LEVEL', '0.12'))
 PREDICTION_NOISE_LEVEL = float(os.getenv('PREDICTION_NOISE_LEVEL', '0.02'))
@@ -40,13 +49,13 @@ OOD_SIMILARITY_THRESHOLD = float(os.getenv('OOD_SIMILARITY_THRESHOLD', '90.0'))
 MODEL_ARTIFACT_PATH = os.getenv('MODEL_ARTIFACT_PATH', './models')
 os.makedirs(MODEL_ARTIFACT_PATH, exist_ok=True)
 
-def convert_gdrive_url(url):
-    if 'drive.google.com' in url and '/file/d/' in url:
-        file_id = url.split('/file/d/')[1].split('/')[0]
-        return f'https://drive.google.com/uc?export=download&id={file_id}'
-    return url
+# def convert_gdrive_url(url):
+#     if 'drive.google.com' in url and '/file/d/' in url:
+#         file_id = url.split('/file/d/')[1].split('/')[0]
+#         return f'https://drive.google.com/uc?export=download&id={file_id}'
+#     return url
 
-DATASET_URL = convert_gdrive_url(DATASET_URL)
+# DATASET_URL = convert_gdrive_url(DATASET_URL)
 
 best_model = None
 best_rf_model = None
@@ -58,7 +67,15 @@ prediction_history = []
 roc_curve_base64 = None  
 
 app = FastAPI(title="Rock vs Mine ML API", description="Sonar data classification with ROC curve visualization", version="3.0.0")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"]) 
+app.include_router(auth_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class SplitterSwapper:
@@ -638,8 +655,11 @@ def get_roc_curve():
         "timestamp": datetime.now().isoformat()
     }
 
-@app.post('/predict', response_model=PredictionResponse)
-def predict(data: InputData):
+# @app.post('/predict', response_model=PredictionResponse)
+# def predict(data: InputData):
+
+@app.post("/predict", response_model=PredictionResponse)
+def predict(data: InputData, token=Depends(decode_token)):
     global prediction_history
     if best_model is None or scaler is None or best_rf_model is None:
         raise HTTPException(status_code=503, detail='Model not initialized.')
@@ -663,6 +683,8 @@ def predict(data: InputData):
         adjusted_confidence, penalty_or_boost, reason = adjust_confidence_based_on_similarity(original_confidence, similarity_info)
         prediction_label = 'Rock' if prediction == 'R' else 'Mine'
 
+        timestamp_utc = datetime.now(timezone.utc)
+
         response = {
             'prediction': prediction_label,
             'confidence': round(adjusted_confidence, 2),
@@ -673,30 +695,58 @@ def predict(data: InputData):
             'similarity_score': round(similarity_info['similarity_score'], 2),
             'reason': reason,
             'model_used': model_name,
-            'timestamp': datetime.now().isoformat(),
+            'timestamp': timestamp_utc.isoformat(),
             'warning': None if similarity_info['in_distribution'] else ' Input outside distribution'
         }
 
         prediction_history.append({**response, 'input': data.values[:3] + ['...'] + data.values[-3:]})
         print(f" Prediction: {prediction_label} | Confidence: {adjusted_confidence:.2f}% | In-distribution: {similarity_info['in_distribution']}")
+
+        predictions_collection.insert_one({
+    "user_id": token["sub"],
+    "prediction": prediction_label,
+    "confidence": adjusted_confidence,
+    "input": data.values,
+    "timestamp": timestamp_utc
+})
+
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
-@app.get('/history')
-def get_history():
+@app.get("/history")
+def get_history(token_data: dict = Depends(decode_token)):
+    user_id = token_data.get("sub")
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    history = list(
+        predictions_collection.find(
+            {"user_id": user_id},
+            {"_id": 0}
+        ).sort("timestamp", -1)
+    )
+
+    return {"history": history}
+
     return {
-        "history": prediction_history,
-        "total_predictions": len(prediction_history),
-        "rock_count": sum(1 for p in prediction_history if p['prediction'] == 'Rock'),
-        "mine_count": sum(1 for p in prediction_history if p['prediction'] == 'Mine')
+        "history": history,
+        "total_predictions": len(history)
     }
 
-@app.post('/clear-history')
-def clear_history():
-    global prediction_history
-    prediction_history = []
-    return {"message": " History cleared"}
+
+@app.delete("/clear-history")
+def clear_history(token_data: dict = Depends(decode_token)):
+    user_id = token_data.get("sub")
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    predictions_collection.delete_many({"user_id": user_id})
+
+    return {"message": "History cleared"}
+
 
 if __name__ == '__main__':
     print('\n' + '='*80)
