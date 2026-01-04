@@ -41,7 +41,8 @@ warnings.filterwarnings('ignore')
 load_dotenv()
 
 
-DATASET_URL = os.getenv('DATASET_URL', 'https://rock-vs-mine-dataset-2025.s3.eu-north-1.amazonaws.com/synthetic_sonar_data_1.csv')
+# DATASET_URL = os.getenv('DATASET_URL', 'https://rock-vs-mine-dataset-2025.s3.eu-north-1.amazonaws.com/synthetic_sonar_data_1.csv')
+DATASET_URL = "https://rock-vs-mine-dataset-2025.s3.eu-north-1.amazonaws.com/synthetic_sonar_data_1.csv"
 PREDICTION_NOISE = os.getenv('PREDICTION_NOISE', 'false').lower() in ['1', 'true', 'yes']
 TRAINING_NOISE_LEVEL = float(os.getenv('TRAINING_NOISE_LEVEL', '0.12'))
 PREDICTION_NOISE_LEVEL = float(os.getenv('PREDICTION_NOISE_LEVEL', '0.02'))
@@ -49,13 +50,6 @@ OOD_SIMILARITY_THRESHOLD = float(os.getenv('OOD_SIMILARITY_THRESHOLD', '90.0'))
 MODEL_ARTIFACT_PATH = os.getenv('MODEL_ARTIFACT_PATH', './models')
 os.makedirs(MODEL_ARTIFACT_PATH, exist_ok=True)
 
-# def convert_gdrive_url(url):
-#     if 'drive.google.com' in url and '/file/d/' in url:
-#         file_id = url.split('/file/d/')[1].split('/')[0]
-#         return f'https://drive.google.com/uc?export=download&id={file_id}'
-#     return url
-
-# DATASET_URL = convert_gdrive_url(DATASET_URL)
 
 best_model = None
 best_rf_model = None
@@ -131,29 +125,28 @@ class PredictionResponse(BaseModel):
 
 
 def fetch_dataset(url: str) -> pd.DataFrame:
+    print("=" * 80)
+    print(f" Fetching dataset from: {url}")
+    print("=" * 80)
+
     try:
-        print('='*80)
-        print(f" Fetching dataset from: {url}")
-        print('='*80)
-        try:
-            df = pd.read_csv(url, header=None)
-            print(' Loaded dataset via pandas read_csv')
-        except Exception as e:
-            print(' pandas read_csv failed:', str(e))
-            print('Falling back to requests download...')
-            resp = requests.get(url, timeout=30)
-            resp.raise_for_status()
-            tmp = 'temp_dataset.csv'
-            with open(tmp, 'wb') as f:
-                f.write(resp.content)
-            df = pd.read_csv(tmp, header=None)
-            os.remove(tmp)
-            print(' Loaded dataset via requests fallback')
-        print(f"Dataset shape: {df.shape}")
-        return df
+        df = pd.read_csv(
+            url,
+            header=None,
+            sep=",",
+            engine="python"   # ✅ avoids C-engine crashes on Render
+        )
     except Exception as e:
-        print(' Error loading dataset:', str(e))
-        raise
+        raise RuntimeError(f"Dataset load failed: {e}")
+
+    # ✅ Hard validation (prevents silent HTML parsing)
+    if df.shape[1] != 61:
+        raise RuntimeError(
+            f"Invalid dataset format: expected 61 columns, got {df.shape[1]}"
+        )
+
+    print(f" Dataset loaded successfully | Shape: {df.shape}")
+    return df
 
 
 def get_positive_class_proba(model, X, positive_class='M'):
@@ -549,6 +542,17 @@ def adjust_confidence_based_on_similarity(original_confidence, similarity_info):
         adjusted = max(45.0, original_confidence - penalty)
         reason = f" Low similarity ({similarity_score:.1f}%)"
         return adjusted, penalty, reason
+
+model_path = os.path.join(MODEL_ARTIFACT_PATH, "best_model.joblib")
+rf_path = os.path.join(MODEL_ARTIFACT_PATH, "rf_model.joblib")
+scaler_path = os.path.join(MODEL_ARTIFACT_PATH, "scaler.joblib")
+
+if os.path.exists(model_path) and os.path.exists(rf_path) and os.path.exists(scaler_path):
+    print(" Loading pre-trained models...")
+    best_model = joblib.load(model_path)
+    best_rf_model = joblib.load(rf_path)
+    scaler = joblib.load(scaler_path)
+    model_name = "LogisticRegression_balanced"
 
 
 def initialize_model():
