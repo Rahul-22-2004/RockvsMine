@@ -32,8 +32,8 @@ Predict whether a sonar signal is a **Rock** 🪨 or a **Mine** 💣 with confid
 ## 🚀 Live Demo
 
 🌐 **Frontend**: [https://rockvs-mine.vercel.app](https://rockvs-mine.vercel.app)  
-🔧 **Backend API**: [https://rock-vs-mine-backend.onrender.com](https://rock-vs-mine-backend.onrender.com)  
-📚 **API Docs (Swagger)**: [https://rock-vs-mine-backend.onrender.com/docs](https://rock-vs-mine-backend.onrender.com/docs)
+🔧 **Backend API**: [ https://rockvsmine-3akm.onrender.com]( https://rockvsmine-3akm.onrender.com)  
+📚 **API Docs (Swagger)**: [https://rockvsmine-3akm.onrender.com/docs]( https://rockvsmine-3akm.onrender.com/docs)
 
 > Try entering 60 sonar values — use the sample buttons for quick testing!
 
@@ -126,4 +126,5 @@ npm start
 - 📱 **Mobile responsiveness** & Progressive Web App (PWA) support
 - 🧪 **A/B testing** for different ML models & hyperparameters
 - 📊 **Advanced visualizations** (feature importance, SHAP explanations)
+
 
