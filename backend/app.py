@@ -562,7 +562,8 @@ def initialize_model():
         print(' INITIALIZING ROCK VS MINE ML MODEL (Option C - Advanced + Bidirectional CV + ROC)')
         print('='*80)
         sonar_data = fetch_dataset(DATASET_URL)
-        X = sonar_data.drop(columns=60, axis=1).values
+        # X = sonar_data.drop(columns=60, axis=1).values
+        X = sonar_data.drop(columns=[60]).values
         Y = sonar_data[60].values
         print(f" Features shape: {X.shape}")
         print(f" Labels: {np.unique(Y)}")
