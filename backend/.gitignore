@@ -1,3 +1,13 @@
 # Environment files
 .env
 backend/.env
+venv/
+__pycache__/
+*.pyc
+venv/
+backend/venv/
+__pycache__/
+*.pyc
+
+echo "venv/" >> .gitignore
+echo "__pycache__/" >> .gitignore
