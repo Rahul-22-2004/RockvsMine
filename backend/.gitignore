@@ -8,6 +8,3 @@ venv/
 backend/venv/
 __pycache__/
 *.pyc
-
-echo "venv/" >> .gitignore
-echo "__pycache__/" >> .gitignore
