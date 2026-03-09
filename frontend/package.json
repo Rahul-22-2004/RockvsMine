@@ -6,7 +6,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "axios": "^1.6.2",
+    "axios": "^1.6.5",
     "baseline-browser-mapping": "^2.9.6",
     "canvas-confetti": "^1.9.2",
     "chart.js": "^4.4.0",

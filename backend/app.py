@@ -65,7 +65,9 @@ app.include_router(auth_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # frontend
+    allow_origins=[
+    "http://localhost:3000",
+    "https://rockvs-mine.vercel.app"], # frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
